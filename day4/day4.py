@@ -17,7 +17,17 @@ def p1(g):
     print(res)
 
 def p2(g):
-    pass
+    res = 0
+    cur = -1
+    while cur != 0:
+        cur = 0
+        for r in range(len(g)):
+            for c in range(len(g[r])):
+                if g[r][c] == 1 and surrounding(g, r, c) < 4:
+                    cur += 1
+                    g[r][c] = 0
+        res += cur
+    print(res)
 
 if __name__ == "__main__":
     with open("input.txt", "r") as f:
