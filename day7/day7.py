@@ -21,8 +21,29 @@ def p1(g, start):
         split += num_split
     print(split)
 
-def p2(x):
-    pass
+def p2(g, start):
+    # memoize
+    seen = {}
+    def recurse(r, c):
+        # base case
+        if r == len(g)-1:
+            return 1
+        
+        # use prev work
+        if (r,c) in seen:
+            return seen[(r, c)]
+        
+        # recurse top to bottom
+        if g[r][c] == 1:
+            res = recurse(r+1, c-1) + recurse(r+1, c+1)
+        else:
+            res = recurse(r+1, c)
+
+        seen[(r, c)] = res
+        return res
+    result = recurse(0, start)
+    print(result)
+        
 
 if __name__ == "__main__":
     g = []
@@ -41,3 +62,4 @@ if __name__ == "__main__":
                         start = i
             g.append(cur)
     p1(g, start)
+    p2(g, start)
