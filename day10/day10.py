@@ -11,29 +11,24 @@ def check(cur, p):
     return True
 
 def solve(p, b):
-    seen = {}
+    seen = set()
+    start = [0 for _ in range(len(p))]
+    q = [[start, 0]]
 
-    def recurse(cur, depth):
-        cur_t = tuple(cur)
-        if cur_t in seen:
-            if seen[cur_t] <= depth:
-                return float('inf')
-        seen[tuple(cur)] = depth
+    while len(q) > 0:
+        cur, depth = q.pop(0)
+        if tuple(cur) in seen:
+            continue
+        seen.add(tuple(cur))
         
         if check(cur, p):
             return depth
         
-        smallest = float('inf')
-        
         for button in b:
             sequence = press(cur.copy(), button)
-            val = recurse(sequence, depth + 1)
-            smallest = min(smallest, val)
-        return smallest
+            q.append([sequence, depth + 1])
     
-    cur = [0 for _ in range(len(p))]
-    return recurse(cur, 0)
-        
+    raise RuntimeError("no solution found??")
 
 def p1(p, b):
     res = 0
@@ -48,7 +43,7 @@ if __name__ == "__main__":
     patterns = []
     buttons = []
     voltages = []
-    with open("input.txt", "r") as f:
+    with open("sample.txt", "r") as f:
         line = f.readline().strip().split()
         while line != []:
             pattern = [0 if line[0][i] == "." else 1 for i in range(1, len(line[0])-1)]
