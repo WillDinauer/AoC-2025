@@ -23,6 +23,7 @@ dy = [0, 0, -1, 1]
 horizontal = []
 vertical = []
 outside = {}
+debug = False
 
 # Check if the pt rests on a line
 def on_line(pt):
@@ -37,48 +38,76 @@ def on_line(pt):
 
 def vert_check(pt):
     out = True
+    x = pt[0]
+    y = pt[1]
     for line in horizontal:
-        if line[0] > pt[1]:
+        if line[0] > y:
             return out
         
         # Crossing line
-        if line[1] < pt[1] < line[2]:
+        if line[1] < x < line[2]:
             out = not out
         
         # Check corner hit
-        if line[1] == pt[1]:
+        if line[1] == x:
             out = dirs["down"] in outside[tuple([line[1], line[0]])]
 
-        if line[2] == pt[1]:
+        if line[2] == x:
             out = dirs["down"] in outside[tuple([line[2], line[0]])]
+    return out
+
+def horiz_check(pt):
+    out = True
+    x = pt[0]
+    y = pt[1]
+    for line in vertical:
+        if line[0] > x:
+            return out
+        
+        if line[1] < y < line[2]:
+            out = not out
+
+        if line[1] == y:
+            out = dirs["right"] in outside[tuple([line[0], line[1]])]
+        
+        if line[2] == y:
+            out = dirs["right"] in outside[tuple([line[0], line[2]])]
     return out
 
 # Check if the pt is inside the figure
 def inside(pt):
     if on_line(pt):
         return True
-    return not vert_check(pt)
+    vc = not vert_check(pt)
+    hc = not horiz_check(pt)
+    if vc != hc:
+        raise RuntimeError("WHAT????")
+    return vc
 
 def get_dir(a, b):
     if a[0] == b[0]:
-        return dirs["down"] if a[1] > b[1] else dirs["up"]
+        return dirs["down"] if a[1] < b[1] else dirs["up"]
     return dirs["left"] if a[0] > b[0] else dirs["right"]
 
 def get_outside(cur, after):
+    swap = False
+    up = "down" if swap else "up"
+    down = "up" if swap else "down"
+    right = "left" if swap else "right"
+    left = "right" if swap else "left"
     if cur == dirs["down"]:
-        return [] if after == dirs["left"] else [dirs["down"], dirs["left"]]
+        return [] if after == dirs[right] else [dirs["down"], dirs[right]]
     if cur == dirs["up"]:
-        return [] if after == dirs["right"] else [dirs["up"], dirs["right"]]
+        return [] if after == dirs[left] else [dirs["up"], dirs[left]]
     if cur == dirs["right"]:
-        return [] if after == dirs["down"] else [dirs["down"], dirs["right"]]
+        return [] if after == dirs[up] else [dirs[up], dirs["right"]]
     if cur == dirs["left"]:
-        return [] if after == dirs["up"] else [dirs["up"], dirs["left"]]
+        return [] if after == dirs[down] else [dirs[down], dirs["left"]]
     
     raise RuntimeError(f"Invalid direction provided to get_outside(): {cur}")
 
 def p2(pts):
     # Compute horizontal, vertical, and directions
-
     direction = get_dir(pts[-1], pts[0])
     for i, pt in enumerate(pts):
         after = pts[i+1] if i < len(pts)-1 else pts[0]
