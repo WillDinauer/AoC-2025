@@ -74,6 +74,47 @@ def horiz_check(pt):
             out = dirs["right"] in outside[tuple([line[0], line[2]])]
     return out
 
+def h_line_check(y, x0, x1):
+    for line in vertical:
+        if line[0] < x0:
+            continue
+        if line[0] >= x1:
+            return True
+        if line[0] == x0:
+            if tuple([line[0], y]) in outside and dirs["right"] in outside[tuple([line[0], y])]:
+                return False
+            continue
+        if line[1] < y < line[2]:
+            return False
+        if line[1] == y or line[2] == y:
+            if len(outside[tuple([line[0], y])]) != 0:
+                return False
+    return True
+
+def v_line_check(x, y0, y1):
+    for line in horizontal:
+        if line[0] < y0:
+            continue
+        if line[0] >= y1:
+            return True
+        if line[0] == y0:
+            if tuple([x, line[0]]) in outside and dirs["down"] in outside[tuple([x, line[0]])]:
+                return False
+            continue
+        if line[1] < x < line[2]:
+            return False
+        if line[1] == x or line[2] == x:
+            if len(outside[tuple([x, line[0]])]) != 0:
+                return False
+    return True
+
+
+def clean(a, b):
+    return v_line_check(a[0], min(a[1], b[1]), max(a[1], b[1])) if a[0] == b[0] else h_line_check(a[1], min(a[0], b[0]), max(a[0], b[0]))
+
+def line_checks(a, b, c, d):
+    return clean(a, c) and clean(a, d) and clean(b, c) and clean(b, d)
+
 # Check if the pt is inside the figure
 def inside(pt):
     if on_line(pt):
@@ -137,12 +178,13 @@ def p2(pts):
 
             # Check if corners are inside fig, then compare
             if inside(c1) and inside(c2):
-                if ar > best:
-                    best = ar
+                if line_checks(a, b, c1, c2):
+                    if ar > best:
+                        best = ar
     print(best)
 
 if __name__ == "__main__":
-    with open("sample.txt", "r") as f:
+    with open("input.txt", "r") as f:
         pts = [[int(x) for x in line.strip().split(",")] for line in f.readlines()]
     p1(pts)
     p2(pts)
