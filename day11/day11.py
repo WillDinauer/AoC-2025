@@ -1,27 +1,30 @@
+import time
 
 def p1(g, start, end, labels):
     visited = [0] * len(labels)
     visited[end] = 1
 
+    seen = [0] * len(labels)
+
     def recurse(val):
         # base case
         if visited[val] > 0:
             return visited[val]
-        
+        if visited[val] == -1:
+            return 0
+
         # recurse over all 'out' connections
         res = 0
-
         if val in g:
             for out_con in g[val]:
                 res += recurse(out_con)
-        
+
         # memoize
-        visited[val] = res
+        visited[val] = res if res != 0 else -1
         return res
     
     res = recurse(start)
 
-    print(res)
     return res
 
 def p2(g, labels):
@@ -74,7 +77,8 @@ if __name__ == "__main__":
             line = f.readline().strip().split()
     start = labels["you"]
     end = labels["out"]
-    p1(g, start, end, labels)
+    p1_solution = p1(g, start, end, labels)
+    print(p1_solution)
 
     with open("input.txt", "r") as f:
         line = f.readline().strip().split()
