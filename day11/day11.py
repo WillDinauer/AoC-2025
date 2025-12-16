@@ -1,10 +1,6 @@
-import time
-
 def p1(g, start, end, labels):
     visited = [0] * len(labels)
     visited[end] = 1
-
-    seen = [0] * len(labels)
 
     def recurse(val):
         # base case
@@ -53,9 +49,8 @@ def p2(g, labels):
 
     config_1 = sd * df * fo
     config_2 = sf * fd * do
-
-    res = config_1 + config_2
-    print(res)
+    
+    return config_1 + config_2
 
 if __name__ == "__main__":
     g = {}
@@ -95,4 +90,5 @@ if __name__ == "__main__":
             g[line[0]] = line[1:]
             line = f.readline().strip().split()
 
-    p2(g, labels)
+    p2_solution = p2(g, labels)
+    print(p2_solution)
