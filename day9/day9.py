@@ -10,54 +10,67 @@ def p1(pts):
                 best = ar
     print(best)
 
+# Number of horizontal lines ABOVE the pt of interest
+def above(pt, horizontal):
+    res = 0
+    # Line: [y, x0, x1]
+    for line in horizontal:
+        if line[0] > pt[1]:
+            return res 
+        if line[1] <= pt[0] <= line[2]:
+            res += 1
+    return res
+
+# Check if the pt rests on a line
+def on_line(pt, horizontal, vertical):
+    for line in horizontal:
+        if pt[1] == line[0] and line[1] <= pt[0] <= line[0]:
+            return True
+    
+    for line in vertical:
+        if pt[0] == line[0] and line[1] <= pt[1] <= line[0]:
+            return True
+
+# Check if the pt is inside the figure
+def inside(pt, horizontal, vertical):
+    if on_line(pt, horizontal, vertical): 
+        return True
+    return above(pt, horizontal) % 2 == 1
+
 
 def p2(pts):
-    # Calculate grid size
-    mx = 0
-    my = 0
-    for pt in pts:
-        if pt[0] > mx:
-            mx = pt[0]
-        if pt[1] > my:
-            my = pt[1]
-
-    grid = [[0 for _ in range(mx+1)] for _ in range(my+1)]
-
-    # Draw a line in the grid from point 'a' to point 'b'
-    def draw_line(a, b):
-        nonlocal grid
-    
-        min_c = min(a[0], b[0])
-        max_c = max(a[0], b[0])
-
-        min_r = min(a[1], b[1])
-        max_r = max(a[1], b[1])
-
-        for r in range(min_r, max_r + 1, 1):
-            for c in range(min_c, max_c + 1, 1):
-                grid[r][c] = 1
-    
-    # Paint borders
+    # create horizontal
+    horizontal = []
+    vertical = []
     for i, pt in enumerate(pts):
-        next = pts[i+1] if i < len(pts) - 1 else pts[0]
-        draw_line(pt, next)
-    
-    # Paint inner section
-    for r in range(len(grid)):
-        on = False
-        for c in range(len(grid[r])):
-            if grid[r][c] == 1:
-                on = not on
-            if on:
-                grid[r][c] = 1
-    
-    print(grid)
+        after = pts[i+1] if i < len(pts)-1 else pts[0] 
 
+        # Check for horizontal lines
+        if pt[1] == after[1]:
+            horizontal.append([pt[1], min(pt[0], after[0]), max(pt[0], after[0])])
+        else:
+            vertical.append([pt[0], min(pt[1], after[1]), max(pt[1], after[1])])
 
+    # Sort by first value in list (increasing x or y)
+    horizontal.sort(key = lambda x: x[0])
+    vertical.sort(key = lambda x: x[0])
 
+    # Iterate over all pairs
+    best = 0
+    for i, a in enumerate(pts):
+        for b in pts[i+1:]:
+            # Corners
+            c1 = [a[0], b[1]]
+            c2 = [b[0], a[1]]
+            ar = area(a, b)
+
+            # Check if corners are inside fig, then compare
+            if inside(c1, horizontal, vertical) and inside(c2, horizontal, vertical) and ar > best:
+                best = ar
+    print(best)
 
 if __name__ == "__main__":
-    with open("input.txt", "r") as f:
+    with open("sample.txt", "r") as f:
         pts = [[int(x) for x in line.strip().split(",")] for line in f.readlines()]
     p1(pts)
     p2(pts)
