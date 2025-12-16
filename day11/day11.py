@@ -1,7 +1,5 @@
 
-def p1(g, labels):
-    end = labels["out"]
-    start = labels["you"]
+def p1(g, start, end, labels):
     visited = [0] * len(labels)
     visited[end] = 1
 
@@ -10,10 +8,12 @@ def p1(g, labels):
         if visited[val] > 0:
             return visited[val]
         
-        # recurse over all out connections
+        # recurse over all 'out' connections
         res = 0
-        for out_con in g[val]:
-            res += recurse(out_con)
+
+        if val in g:
+            for out_con in g[val]:
+                res += recurse(out_con)
         
         # memoize
         visited[val] = res
@@ -22,54 +22,43 @@ def p1(g, labels):
     res = recurse(start)
 
     print(res)
+    return res
 
 def p2(g, labels):
-    end = labels["out"]
     start = labels["svr"]
     dac = labels["dac"]
     fft = labels["fft"]
+    end = labels["out"]
 
-    visited = [[0] * len(labels)] * 4
-    dac_visited = 1
-    fft_visited = 2
-    two_visited = 3
+    # num paths from svr to dac
+    sd = p1(g, start, dac, labels)
 
-    visited[two_visited][end] = 1
+    # num paths from svr to fft
+    sf = p1(g, start, fft, labels)
 
-    def recurse(val, seen):
-        if visited[seen][val] > 0:
-            return visited[seen][val]
-        
-        if val == dac:
-            if seen == two_visited:
-                raise RuntimeError("I wouldn't expect this to be possible.")
-            if seen == fft_visited:
-                seen = two_visited
-            else:
-                seen = dac_visited
-        
-        if val == fft:
-            if seen == two_visited:
-                raise RuntimeError("I wouldn't expect this to be possible.")
-            if seen == fft_visited:
-                seen = two_visited
-            else:
-                seen = fft_visited
+    # num paths from fft to dac
+    fd = p1(g, fft, dac, labels)
 
-        res = 0
-        for out_con in g[val]:
-            res += recurse(out_con, seen)
-        visited[seen][val] = res
-        return res
-    
-    res = recurse(start, 0)
+    # num paths from dac to fft
+    df = p1(g, dac, fft, labels)
+
+    # num paths from fft to out
+    fo = p1(g, fft, end, labels)
+
+    # num paths from dac to out
+    do = p1(g, dac, end, labels)
+
+    config_1 = sd * df * fo
+    config_2 = sf * fd * do
+
+    res = config_1 + config_2
     print(res)
 
 if __name__ == "__main__":
     g = {}
     cur = 0
     labels = {}
-    with open("sample.txt", "r") as f:
+    with open("input.txt", "r") as f:
         line = f.readline().strip().split()
         while line != []:
             line[0] = line[0][:3]
@@ -83,9 +72,11 @@ if __name__ == "__main__":
             # Graph construction
             g[line[0]] = line[1:]
             line = f.readline().strip().split()
-    p1(g, labels)
+    start = labels["you"]
+    end = labels["out"]
+    p1(g, start, end, labels)
 
-    with open("sample2.txt", "r") as f:
+    with open("input.txt", "r") as f:
         line = f.readline().strip().split()
         while line != []:
             line[0] = line[0][:3]
